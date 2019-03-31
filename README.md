@@ -134,18 +134,18 @@ of frames:
 ![calib](/docs/calibs_menu.png?raw=true)
 ---
 
-### Real world scanner
-
-The beast running:
-
 ---
+
+### Real world example
+
+The beast running and controlled from the "motion" menu:
+
 ![front](/docs/scannerfront.jpg)
----
 
-The disco lights on the back:
+The disco lights flashing on the back:
 
----
 ![back](/docs/scannerback.jpg)
----
 
 Good Luck!
+
+---
