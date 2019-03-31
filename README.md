@@ -51,10 +51,11 @@ under path/filename.
 
 Goscan should be started within a **xterm** and possibly in "sudo"
 mode for allowing hardware access to the RPI. It is assumed that a
-digital camera is plugged in (via USB) and on and **goscan** will
-first attempt to initialize a scanner object using it. If no camera is
-connected, **goscan** will proceed with a warning message. A stepper
-motor controlled by a driver connected to the RPI is initialized, see goscan.py:
+digital camera is plugged in (via USB), on, and **goscan** will first
+attempt to initialize a scanner object from it. If no camera is
+connected, **goscan** will proceed with a warning message. However, a
+stepper motor controlled by a driver connected to the RPI is
+compulsory and will be initialized as (see goscan.py):
 
 ```python
    def initialize_motor(stepmode):
@@ -72,10 +73,7 @@ motor controlled by a driver connected to the RPI is initialized, see goscan.py:
 This should certainly be edited according to your driver and stepper
 motor. See [**wipistepper**](https://github.com/eatdust/wipistepper)
 for more details. Other default settings may be edited, the default
-*stepmode*, storage path for scans, flats and bias images. How many
-*hdrframe* you want to take and what exposure range (*exprange) they
-spawn (here 2 stops). These can also be edited interactively one
-**goscan** started.
+*stepmode*, storage path for scans, flats and bias images.
 
 ```python
 #stepmode
@@ -94,10 +92,14 @@ imgtype = 'nef'
 #hdr default settings
 hdrframe = 3
 exprange = 2
+
 ```
 
-A summary of the default settings is displayed during the
-initialization, after which, the main menu shows up:
+They specify how many *hdrframe* you want for each scan image, what
+exposure range (*exprange*) they spawn (here 2 stops). These can also
+be edited interactively using the **goscan** settings menu. A summary
+of the default settings is displayed during the initialization, after
+which, the main menu shows up:
 
 ---
 ![main](/docs/main_menu.png?raw=true)
@@ -105,18 +107,21 @@ initialization, after which, the main menu shows up:
 
 The first entry allows to control the stepper interactively, using
 arrows, entry key and space bar:
+
 ---
 ![motion](/docs/motion_controls.png?raw=true)
 ---
 
 The second entry leads to the scanning control, pictures and frame
 forward are taken automatically:
+
 ---
 ![scan](/docs/scan_controls.png?raw=true)
 ---
 
 The setting menu allows to modify on the fly various default
 parameters:
+
 ---
 ![param](/docs/params_menu.png?raw=true)
 ---
@@ -124,7 +129,23 @@ parameters:
 Finally, "calibration" allows taking flat field exposures, bias
 exposures or adjust the film position by moving it by a given number
 of frames:
+
 ---
 ![calib](/docs/calibs_menu.png?raw=true)
 ---
 
+### Real world scanner
+
+The beast running:
+
+---
+![front](/docs/scannerfront.jpg)
+---
+
+The disco lights on the back:
+
+---
+![back](/docs/scannerback.jpg)
+---
+
+Good Luck!
