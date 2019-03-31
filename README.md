@@ -16,7 +16,10 @@ Please ensure that you have a working installation of
 [WiringPi-Python](https://github.com/WiringPi/WiringPi-Python),
 [wipistepper](https://github.com/eatdust/wipistepper),
 [gphoto2](https://github.com/gphoto/gphoto2) as well as
-[python-gphoto2](https://github.com/jim-easterbrook/python-gphoto2)
+[python-gphoto2](https://github.com/jim-easterbrook/python-gphoto2). Goscan
+also relies on
+[curses-menu](https://github.com/pmbarrett314/curses-menu) and
+[curtsies](https://github.com/bpython/curtsies).
 
 ---
 
