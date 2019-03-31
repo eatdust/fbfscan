@@ -28,5 +28,5 @@ setup(
     description="Goscan film scanner",
     license="GPLv3",
     keywords="scanner film stepper",
-    url="http://example.com/HelloWorld/",   
+    url="https://github.com/eatdust/goscan/",   
 )
