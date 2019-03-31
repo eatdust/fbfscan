@@ -96,10 +96,35 @@ hdrframe = 3
 exprange = 2
 ```
 
-Here a picture of the stepper motor, the driver board and the RPI:
+A summary of the default settings is displayed during the
+initialization, after which, the main menu shows up:
 
 ---
-![stepper](/docs/stepdriverpi.jpg?raw=true)
+![main](/docs/main_menu.png?raw=true)
 ---
 
-For the film scanner code, see [goscan](https://github.com/eatdust/goscan).
+The first entry allows to control the stepper interactively, using
+arrows, entry key and space bar:
+---
+![motion](/docs/motion_controls.png?raw=true)
+---
+
+The second entry leads to the scanning control, pictures and frame
+forward are taken automatically:
+---
+![scan](/docs/scan_controls.png?raw=true)
+---
+
+The setting menu allows to modify on the fly various default
+parameters:
+---
+![param](/docs/params_menu.png?raw=true)
+---
+
+Finally, "calibration" allows taking flat field exposures, bias
+exposures or adjust the film position by moving it by a given number
+of frames:
+---
+![calib](/docs/calibs_menu.png?raw=true)
+---
+
