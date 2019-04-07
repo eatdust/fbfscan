@@ -57,11 +57,11 @@ def main():
     camera = sc.scanner(pylog=True, summary=False)
     time.sleep(2)
     
-    menu = cm.CursesMenu("GoScan 16mm Film Scanner", "Actions")
+    menu = cm.CursesMenu("Fbfscan 16mm Film Scanner", "Actions")
     motionitem = cm.items.FunctionItem("Motion controls",motion_controls,[motor,menu])
     scanitem = cm.items.FunctionItem("Scan controls",scan_controls,[camera,motor,menu])
     
-    settingmenu = cm.SelectionMenu(strings=[],title="GoScan parameters menu")
+    settingmenu = cm.SelectionMenu(strings=[],title="Fbfscan parameters menu")
     
     resetitem = cm.items.FunctionItem("Set image count",reset_imgcount,[])
     hdritem = cm.items.FunctionItem("Set HDR number",reset_hdrframe,[])
@@ -69,7 +69,7 @@ def main():
     rangeitem = cm.items.FunctionItem("Set exposure bracket",reset_exprange,[])
     expitem = cm.items.FunctionItem("Set exposure time",reset_exptime,[camera])
 
-    calibmenu = cm.SelectionMenu(strings=[],title="GoScan calibration menu")
+    calibmenu = cm.SelectionMenu(strings=[],title="Fbfscan calibration menu")
     nframeitem = cm.items.FunctionItem("Move by N frames",move_nframes,[motor])
     angleitem = cm.items.FunctionItem("Move by an angle",move_angle,[motor])
     flatitem = cm.items.FunctionItem("Take flat exposures",take_flats,[camera,0.0])

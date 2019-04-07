@@ -1,13 +1,13 @@
-# Goscan: a film scanner
+# Fbfscan: a frame-by-frame HDR film scanner
 
 ---
 
 ### Summary
 
-Goscan is a python script for Raspberry Pi allowing interactive and
+Fbfscan is a python script for Raspberry Pi allowing interactive and
 automatic controls of a digital camera and a stepper motor to allow
 for frame-by-frame film scan. Support for "flat" exposures, High Dynamical
-Range (HDR), calibration... are provided. **Goscan** is built on top of
+Range (HDR), calibration... are provided. **Fbfscan** is built on top of
 **gphoto2** for controlling digital cameras and **wipistepper** for
 controlling stepper motors.
 
@@ -16,7 +16,7 @@ Please ensure that you have a working installation of
 [WiringPi-Python](https://github.com/WiringPi/WiringPi-Python),
 [wipistepper](https://github.com/eatdust/wipistepper),
 [gphoto2](https://github.com/gphoto/gphoto2) as well as
-[python-gphoto2](https://github.com/jim-easterbrook/python-gphoto2). Goscan
+[python-gphoto2](https://github.com/jim-easterbrook/python-gphoto2). Fbfscan
 also relies on
 [curses-menu](https://github.com/pmbarrett314/curses-menu) and
 [curtsies](https://github.com/bpython/curtsies).
@@ -47,15 +47,15 @@ under path/filename.
 
 ---
 
-### Goscan window
+### Fbfscan window
 
-Goscan should be started within a **xterm** and possibly in "sudo"
+Fbfscan should be started within a **xterm** and possibly in "sudo"
 mode for allowing hardware access to the RPI. It is assumed that a
-digital camera is plugged in (via USB), on, and **goscan** will first
+digital camera is plugged in (via USB), on, and **fbfscan** will first
 attempt to initialize a scanner object from it. If no camera is
-connected, **goscan** will proceed with a warning message. However, a
+connected, **fbfscan** will proceed with a warning message. However, a
 stepper motor controlled by a driver connected to the RPI is
-compulsory and will be initialized as (see goscan.py):
+compulsory and will be initialized as (see fbfscan.py):
 
 ```python
    def initialize_motor(stepmode):
@@ -97,7 +97,7 @@ exprange = 2
 
 They specify how many *hdrframe* you want for each scan image, what
 exposure range (*exprange*) they spawn (here 2 stops). These can also
-be edited interactively using the **goscan** settings menu. A summary
+be edited interactively using the **fbfscan** settings menu. A summary
 of the default settings is displayed during the initialization, after
 which, the main menu shows up:
 

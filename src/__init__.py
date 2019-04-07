@@ -1,1 +1,1 @@
-name = "goscan"
+name = "fbfscan"

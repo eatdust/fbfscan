@@ -8,7 +8,7 @@ from os.path import splitext
 from setuptools import setup, find_packages
 
 setup(
-    name="goscan",
+    name="fbfscan",
     version="0.1.0",
     packages=find_packages('src'),
     package_dir={'': 'src'},
@@ -25,8 +25,8 @@ setup(
     # metadata to display on PyPI
     author="Chris Ringeval",
     author_email="eatdirt@mageia.org",
-    description="Goscan film scanner",
+    description="Fbfscan film scanner",
     license="GPLv3",
     keywords="scanner film stepper",
-    url="https://github.com/eatdust/goscan/",   
+    url="https://github.com/eatdust/fbfscan/",   
 )
