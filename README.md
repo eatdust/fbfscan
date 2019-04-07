@@ -21,6 +21,13 @@ also relies on
 [curses-menu](https://github.com/pmbarrett314/curses-menu) and
 [curtsies](https://github.com/bpython/curtsies).
 
+The directory "process/" contains a few scripts for processing the raw
+images into EXR images as well as tone-mapping. For these scripts to
+work, you should have a working installation of
+[pfstools](http://pfstools.sourceforge.net/),
+[astropy](http://www.astropy.org/), [netpbm](http://www.astropy.org/)
+and [dcraw](http://www.astropy.org/).
+
 ---
 
 ### Scanner initialization and methods

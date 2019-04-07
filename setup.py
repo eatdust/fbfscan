@@ -17,9 +17,7 @@ setup(
     zip_safe=False,
     scripts=[],
     install_requires=['wipistepper','gphoto2','curses-menu','curtsies'],
-    package_data={
-        # If any package contains *.txt or *.rst files, include them:
-        '': ['*.txt', '*.rst'],
+    package_data={'': 'process',['*.txt', '*.rst'],
     },
 
     # metadata to display on PyPI
