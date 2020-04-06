@@ -104,10 +104,10 @@ def initialize_motor(stepmode):
     connections={'en':0,'clk':1,'cw':2}
     defaultvalues={'en':0,'clk':0,'cw':1}
 
-    motor = wm.motor(drivername='TB6600',motorname='QSH6018-65-28-210',
+    motor = wm.motor(drivername='Kinco-2CM880',motorname='QSH6018-65-28-210',
                      wiring=connections, states=defaultvalues,
                      stepmode=stepmode, pulsewidth=10,
-                     clockwidth=10, range=4096,
+                     clockwidth=6.5104, range=4096,
                      stepangle=1.8)
     
     print(motor.get_drivername())
@@ -120,6 +120,8 @@ def initialize_motor(stepmode):
     print('tick/rot    =  ',motor.get_ticknumber(360))
     print('pulse width =  ',motor.get_pulsewidth())
     print('clock width =  ',motor.get_clockwidth())
+    print('clock divid =  ',motor.get_clockdivider())
+    print('clock shift =  ',motor.get_clockshift())
     print('clock maxrpm=  ',motor.get_clockmaxrpm())
     print('clock minrpm=  ',motor.get_clockminrpm())
     print()
