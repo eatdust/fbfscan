@@ -37,7 +37,8 @@ class scanner(object):
         else:
             self.get_exposure_bias()
             self.get_exposure_time()
-        
+            self.get_iso()
+
         self.deconnect()
             
             
@@ -185,6 +186,65 @@ class scanner(object):
          
             
         return value
+
+
+    def get_iso(self):
+
+        error, isovalue = gp.gp_widget_get_child_by_name(self.config,'iso')
+
+        if error !=0:
+            print(error)
+            print('get_iso: cannot read widget!')
+            return
+        else:
+            self.iso = isovalue
+
+        error, value = gp.gp_widget_get_value(isovalue)
+
+        if error !=0:
+            print(error)
+            print('get_iso: cannot read value!')
+            return
+        
+        count = gp.check_result(gp.gp_widget_count_choices(self.iso))
+        for choice in range(count):
+            error, test = gp.gp_widget_get_choice(self.iso, choice)
+            if test == value:
+                break
+
+        if error !=0:
+            print(error)
+            print('get_iso: cannot find choice!')
+            return
+        
+        return choice, value
+            
+
+    def set_iso(self,choice):
+
+        count = gp.check_result(gp.gp_widget_count_choices(self.iso))
+        
+        if choice < 0 or choice > count-1:
+            print('choice max is:',count)
+            print('set_iso: choice out of range!')
+            return
+
+        error, value = gp.gp_widget_get_choice(self.iso, choice)
+        
+        error = gp.gp_widget_set_value(self.iso,value)        
+
+        if error !=0:
+            print('set_iso: cannot set value!')
+
+        error = gp.gp_camera_set_config(self.camera, self.config, self.context)
+         
+        if error !=0:
+            print('set_iso: cannot push config!')
+         
+            
+        return value
+
+
 
     
 
