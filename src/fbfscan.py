@@ -68,6 +68,7 @@ def main():
     inftyitem = cm.items.FunctionItem("Set maximum count",reset_imginfty,[])
     rangeitem = cm.items.FunctionItem("Set exposure bracket",reset_exprange,[])
     expitem = cm.items.FunctionItem("Set exposure time",reset_exptime,[camera])
+    isoitem = cm.items.FunctionItem("Set ISO value",reset_iso,[camera])
 
     calibmenu = cm.SelectionMenu(strings=[],title="Fbfscan calibration menu")
     nframeitem = cm.items.FunctionItem("Move by N frames",move_nframes,[motor])
@@ -83,6 +84,7 @@ def main():
     settingmenu.append_item(inftyitem)
     settingmenu.append_item(rangeitem)
     settingmenu.append_item(expitem)
+    settingmenu.append_item(isoitem)
     
     settingitem = cm.items.SubmenuItem("Settings menu",settingmenu,menu)
     menu.append_item(settingitem)
@@ -211,6 +213,23 @@ def reset_exptime(camera):
     camera.deconnect()
     
     return
+
+
+def reset_iso(camera):
+
+    isochoice = int( input('isochoice (see ghoto2) = '))
+
+    camera.connect()
+
+    isovalue = camera.set_iso(isochoice)
+
+    print('ISO value set to: ',isovalue)
+    time.sleep(3)
+
+    camera.deconnect()
+    
+    return
+
 
 
 
