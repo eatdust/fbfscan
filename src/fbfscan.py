@@ -9,6 +9,10 @@ import time as time
 import sys as sys
 import threading as th
 
+import configparser as cp
+import os as os
+
+
 #maximum acceleration
 rpmps = 360
 
@@ -49,9 +53,11 @@ maxdelay = 1000
 
 
 
-
 def main():
 
+
+    read_config_file()
+    
     motor = initialize_motor(stepmode=inistepmode)
     time.sleep(2)
     camera = sc.scanner(pylog=True, summary=False)
@@ -101,6 +107,55 @@ def main():
 
 
 
+def read_config_file():
+    if not os.path.exists('config.ini'):
+        return
+
+
+    config = cp.ConfigParser()
+    config.read('config.ini')
+    toppath = config['storage']['toppath']
+    imgpath = toppath + config['storage']['imgsubdir']
+    flatpath = toppath + config['storage']['flatsubdir']
+    zeropath = toppath + config['storage']['zerosubdir']
+
+    imgroot = config['storage']['imgroot']
+    imgtype = config['storage']['imgtype']
+
+    imgcount = config['camera']['imgcount']
+    imginfty = config['camera']['imginfty']
+    hdrframe = config['camera']['hdrframe']
+    exprange = config['camera']['exprange']
+
+    inistepmode = config['stepper']['stepmode']
+    rpmps = config['stepper']['maxaccel']
+    maxrpm = config['stepper']['maxspeed']
+
+    print("---------------------------------------")
+    print("Config file found")
+    print("---------------------------------------")
+    print("toppath   = ",toppath)
+    print("imgpath   = ",imgpath)
+    print("flatpath  = ",flatpath)
+    print("zeropath  = ",zeropath)
+    print("imgroot   = ",imgroot)
+    print("imgtype   = ",imgtype)
+    print("")
+    print("imgcount  = ",imgcount)
+    print("imginfty  = ",imginfty)
+    print("hdrframe  = ",hdrframe)
+    print("exprange  = ",exprange)
+    print("")
+    print("stepmode  = ",inistepmode)
+    print("rpmps     = ",rpmps)
+    print("maxrpm    = ",maxrpm)
+    print("---------------------------------------")
+    print("")
+
+    time.sleep(3)
+    
+    
+    
 
 def initialize_motor(stepmode):
     connections={'en':0,'clk':1,'cw':2}
@@ -632,11 +687,36 @@ def scan_controls(camera,motor,menu):
             scr[izero,0:delaylab.width]=[delaylab]
             scr[izero,delaylab.width:delaylab.width+delaystg.width+1]=[delaystg]
 
-            steplab=ci.fmtstr(on_blue(bold(yellow('stepmode ='))))
-            stepstg=ci.fmtstr(on_blue(red(bold(' '+str(motor.stepmode)))))
-            scr[izero,window.width-steplab.width-stepstg.width
-                :window.width-stepstg.width]=[steplab]
-            scr[izero,window.width-stepstg.width:window.width]=[stepstg]
+##info not really needed on scan (displayed in the motion control
+##interface)
+#
+#            steplab=ci.fmtstr(on_blue(bold(yellow('stepmode ='))))
+#            stepstg=ci.fmtstr(on_blue(red(bold(' '+str(motor.stepmode)))))
+#            scr[izero,window.width-steplab.width-stepstg.width
+#                :window.width-stepstg.width]=[steplab]
+#            scr[izero,window.width-stepstg.width:window.width]=[stepstg]
+
+            isolab=ci.fmtstr(on_blue(bold(yellow('iso ='))))
+            if camera.error == 0:
+                isostg=ci.fmtstr(on_blue(red(bold(' '+str(camera.get_iso())))))
+            else:
+                isostg = ci.fmtstr(on_blue(red(bold(' '+'No Cam'))))
+            scr[izero,window.width-isolab.width-isostg.width
+                :window.width-isostg.width]=[isolab]
+            scr[izero,window.width-isostg.width:window.width]=[isostg]
+
+            shutlab=ci.fmtstr(on_blue(bold(yellow('exptime ='))))
+
+            if camera.error == 0:
+                shutstg=ci.fmtstr(on_blue(red(bold(' '+str(camera.get_exposure_time())))))
+            else:
+                shutstg = ci.fmtstr(on_blue(red(bold(' '+'No Cam'))))
+
+            icenter=int((window.width+shutlab.width+shutstg.width)/2)
+            scr[ilast-2,icenter-shutlab.width-shutstg.width:icenter-shutstg.width]=[shutlab]
+            scr[ilast-2,icenter-shutstg.width:icenter]=[shutstg]
+
+
 
             hdrlab=ci.fmtstr(on_blue(bold(yellow('hdrframe ='))))
             hdrstg=ci.fmtstr(on_blue(red(bold(' '+str(hdrframe)))))
