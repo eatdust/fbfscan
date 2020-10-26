@@ -108,6 +108,13 @@ def main():
 
 
 def read_config_file():
+
+    global toppath, imgpath, flatpath, zeropath
+    global imgroot, imgtype, imgcount, imginfty
+    global hdrframe, exprange, inistepmode
+    global rpmps, maxrpm
+    
+
     if not os.path.exists('config.ini'):
         return
 
@@ -122,14 +129,14 @@ def read_config_file():
     imgroot = config['storage']['imgroot']
     imgtype = config['storage']['imgtype']
 
-    imgcount = config['camera']['imgcount']
-    imginfty = config['camera']['imginfty']
-    hdrframe = config['camera']['hdrframe']
-    exprange = config['camera']['exprange']
+    imgcount = int(config['camera']['imgcount'])
+    imginfty = int(config['camera']['imginfty'])
+    hdrframe = int(config['camera']['hdrframe'])
+    exprange = int(config['camera']['exprange'])
 
-    inistepmode = config['stepper']['stepmode']
-    rpmps = config['stepper']['maxaccel']
-    maxrpm = config['stepper']['maxspeed']
+    inistepmode = int(config['stepper']['stepmode'])
+    rpmps = int(config['stepper']['maxaccel'])
+    maxrpm = int(config['stepper']['maxspeed'])
 
     print("---------------------------------------")
     print("Config file found")
