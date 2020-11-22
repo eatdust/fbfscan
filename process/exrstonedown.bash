@@ -9,9 +9,9 @@ export PFSCLAMP=/bin/pfsclamp
 export OPTCLAMP=
 
 export PFSTMO=/bin/pfstmo_mantiuk08
-export OPTTMO='-d g=2.4:l=5000:b=0.1:k=0:a=0 -f 25'
+export OPTTMO='-d g=2.2:l=5000:b=0.1:k=0:a=0 -f 25'
 
-#basic LDR convertion
+#basic LDR convertion (-m is aperture, can be found with pfsv)
 #export PFSTMO=/bin/pfsgamma
 #export OPTTMO='-g 1.9 -m 0.02'
 

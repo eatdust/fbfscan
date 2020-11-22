@@ -3,7 +3,11 @@
 export FLATIMG=BeforeFlat.fits
 
 export DCRAW=/bin/dcraw
+
+#manual white balance settings, e.g. if the film colors passed away
 #export OPTDCRAW='-r 2.355628 1.000000 1.779836 1.000000 -4 -c'
+
+#uses the one of the camera
 export OPTDCRAW='-v -w -4 -c -P ./badpixels'
 
 export PAMCUT=/bin/pamcut
@@ -23,9 +27,6 @@ export OPTFLATTEN='--mean'
 export PFSINHDR=/bin/pfsinhdrgen
 export PFSEXROUT=/bin/pfsout
 
-export PFSIMGOUT=/bin/pfsoutimgmagick
-export OPTOUT='--quality 98 --bit-depth 8'
-
 export PFSCAL=/bin/pfshdrcalibrate
 export OPTCAL='-r linear -c none -b 12'
 
@@ -34,13 +35,6 @@ export PFSINEXR=/bin/pfsinexr
 
 export PFSCLAMP=/bin/pfsclamp
 export OPTCLAMP=
-
-export PFSTMO=/bin/pfstmo_mantiuk08
-export OPTTMO='-d g=2.2:l=5000:b=0.1:k=0:a=0 -f 25'
-
-#basic LDR convertion
-#export PFSTMO=/bin/pfsgamma
-#export OPTTMO='-g 1.9 -m 0.02'
 
 export IMGSUFFIX='nef'
 export FITSSUFFIX='fits'
@@ -54,13 +48,10 @@ export OUTPREFIX='O_'
 export IMGPRINTF='%06d'
 export HDRPRINTF='%02d'
 
-export IMGMIN=2100
+export IMGMIN=0
 export IMGINF=99999
 export HDRMIN=0
 export DELETETMP=1
-#tone mapping image per image does not allow fps option to work. Will
-#generate blinking!
-export TONEMAPPING=0
 
 
 if [ $# -le 1 ]; then
@@ -153,10 +144,6 @@ function spawndist()
     fi
 
     outfile=$OUTPREFIX$prefix'.'$OUTSUFFIX
-
-    if [ $TONEMAPPING -eq 1 ]; then
-	$PFSINEXR $exrfile | $PFSCLAMP $OPTCLAMP | $PFSTMO $OPTTMO | $PFSIMGOUT $OPTOUT $outfile
-    fi
 	
 }
 
