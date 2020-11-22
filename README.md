@@ -22,8 +22,8 @@ also relies on
 [curtsies](https://github.com/bpython/curtsies).
 
 The directory "process/" contains a few scripts for processing the raw
-images into EXR images as well as tone-mapping. For these scripts to
-work, you should have a working installation of
+images into EXR images, as well as tone-mapping them afterwards. For
+these scripts to work, you should have a working installation of
 [pfstools](http://pfstools.sourceforge.net/),
 [astropy](http://www.astropy.org/), [netpbm](http://www.astropy.org/)
 and [dcraw](http://www.astropy.org/).
@@ -45,12 +45,16 @@ Only a few method from **gphoto2** are wrapped for a scanner object:
 ```python
     def get_exposure_time(self):
     def set_exposure_time(self,choice):
+    def get_iso(self):
+    def set_iso(self,choice):
+    def get_exposure_bias(self):
+    def set_exposure_bias(self,choice):
     def single_capture(self,path,filename,success=True):
 ```
 
 Notice that *choice* should be an integer (see **gphoto2** help) and
-*single_capture()* triggers one shot with the set exposure and save it
-under path/filename.
+*single_capture()* triggers one shot with the set exposure and set iso
+and save it under path/filename.
 
 ---
 
@@ -60,27 +64,29 @@ Fbfscan should be started within a **xterm** and possibly in "sudo"
 mode for allowing hardware access to the RPI. It is assumed that a
 digital camera is plugged in (via USB), on, and **fbfscan** will first
 attempt to initialize a scanner object from it. If no camera is
-connected, **fbfscan** will proceed with a warning message. However, a
-stepper motor controlled by a driver connected to the RPI is
-compulsory and will be initialized as (see fbfscan.py):
+connected, **fbfscan** will proceed with a warning message. A stepper
+motor controlled by a driver is expected to be connected to the RPI
+and will be initialized, if found, as (see fbfscan.py):
 
 ```python
    def initialize_motor(stepmode):
        connections={'en':0,'clk':1,'cw':2}
        defaultvalues={'en':0,'clk':0,'cw':1}
 
-       motor = wm.motor(drivername='TB6600',motorname='QSH6018-65-28-210',
+       motor = wm.motor(drivername='Kinco-2CM880',motorname='QSH6018-65-28-210',
                         wiring=connections, states=defaultvalues,
 			stepmode=stepmode,
                         pulsewidth=10,
-                        clockwidth=10, range=4096,
+                        clockwidth=6.5104, range=4096,
 			stepangle=1.8)
 ```					      
 
-This should certainly be edited according to your driver and stepper
-motor. See [**wipistepper**](https://github.com/eatdust/wipistepper)
-for more details. Other default settings may be edited, the default
-*stepmode*, storage path for scans, flats and bias images.
+These default settings should certainly be edited, such as the default
+*stepmode*, storage path for scans, flats and bias images. For this
+purpose, an editable **config.ini** is provided, which is initialy
+read and will override most of these options. Check out your driver and stepper
+motor settings, see [**wipistepper**](https://github.com/eatdust/wipistepper)
+for more details. Other editable settings are:
 
 ```python
 #stepmode
