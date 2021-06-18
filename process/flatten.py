@@ -28,8 +28,8 @@ scale = 1
 maxout = 65535
 
 
-hduf = fits.open(pargs.flat)
-hdui = fits.open(pargs.image)
+hduf = fits.open(pargs.flat,ignore_missing_end=True)
+hdui = fits.open(pargs.image,ignore_missing_end=True)
 
 
 if pargs.zero is not None:
