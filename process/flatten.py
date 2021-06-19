@@ -34,7 +34,7 @@ hdui = fits.open(pargs.image,ignore_missing_end=True)
 
 if pargs.zero is not None:
     zerocorr = True
-    hduz = fits.open(pargs.zero)
+    hduz = fits.open(pargs.zero,ignore_missing_end=True)
 else:
     zerocorr = False
 
