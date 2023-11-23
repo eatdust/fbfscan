@@ -3,11 +3,7 @@
 export FLATIMG=BeforeFlat.fits
 
 export DCRAW=/bin/dcraw
-
-#manual white balance settings, e.g. if the film colors passed away
-#export OPTDCRAW='-r 2.355628 1.000000 1.779836 1.000000 -4 -c'
-
-#uses the one of the camera
+#export OPTDCRAW='-v -r 2.355628 1.000000 1.779836 1.000000 -4 -c -P ./badpixels'
 export OPTDCRAW='-v -w -4 -c -P ./badpixels'
 
 export PAMCUT=/bin/pamcut
@@ -26,6 +22,9 @@ export OPTFLATTEN='--mean'
 
 export PFSINHDR=/bin/pfsinhdrgen
 export PFSEXROUT=/bin/pfsout
+
+export PFSIMGOUT=/bin/pfsoutimgmagick
+export OPTOUT='--quality 98 --bit-depth 8'
 
 export PFSCAL=/bin/pfshdrcalibrate
 export OPTCAL='-r linear -c none -b 12'

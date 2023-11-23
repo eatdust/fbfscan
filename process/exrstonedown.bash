@@ -9,9 +9,9 @@ export PFSCLAMP=/bin/pfsclamp
 export OPTCLAMP=
 
 export PFSTMO=/bin/pfstmo_mantiuk08
-export OPTTMO='-d g=2.2:l=5000:b=0.1:k=0:a=0 -f 25'
+export OPTTMO='-d g=2.1:l=5000:b=0.1:k=0:a=0 -f 25'
 
-#basic LDR convertion (-m is aperture, can be found with pfsv)
+#basic LDR convertion
 #export PFSTMO=/bin/pfsgamma
 #export OPTTMO='-g 1.9 -m 0.02'
 
@@ -89,16 +89,27 @@ export EXRMAX=$(($count - 1))
 echo "Found $EXRNUM images!"
 
 echo "Opening sequence file $2"
+NCOLS=$(head $2 | awk '{print NF; exit}')
 STARTFRAMES=$(cat $2 | awk '{print $1}')
 ENDFRAMES=$(cat $2 | awk '{print $2}')
 
 #Main loop
 export count=0
+export shiftf=0
 while read in
 do
     startf=$(echo $in | awk '{print $1}')
     endf=$(echo $in | awk '{print $2}')
     echo
+    if [ $NCOLS -eq 3 ]; then
+#previous shiftf applies to startf
+	startf=$[$startf + $shiftf]
+#read next shiftf
+	shiftf=$(echo $in | awk '{print $3}')
+	echo "shift found: $shiftf"
+#applies to current enfd
+	endf=$[$endf + $shiftf]
+    fi				
     echo "sequence: $startf to $endf"
     spawndist $startf $endf &
     echo
