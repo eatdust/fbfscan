@@ -2,6 +2,7 @@
 import argparse
 import numpy as np
 from astropy.io import fits
+from astropy.stats import sigma_clip
 
 
 parser = argparse.ArgumentParser()
@@ -19,6 +20,9 @@ parser.add_argument("--tanh",action="store_true"
                     ,help="Tanh non-linear compression")
 parser.add_argument("--check",action="store_true"
                     ,help="Check for saturation and skip in case of")
+parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping  max values")
+parser.add_argument("--sigclipmin",type=float,help="Sigma for clipping  min values")
+
 
 
 pargs = parser.parse_args()
@@ -28,13 +32,13 @@ scale = 1
 maxout = 65535
 
 
-hduf = fits.open(pargs.flat,ignore_missing_end=True)
-hdui = fits.open(pargs.image,ignore_missing_end=True)
+hduf = fits.open(pargs.flat)
+hdui = fits.open(pargs.image)
 
 
 if pargs.zero is not None:
     zerocorr = True
-    hduz = fits.open(pargs.zero,ignore_missing_end=True)
+    hduz = fits.open(pargs.zero)
 else:
     zerocorr = False
 
@@ -64,13 +68,29 @@ if pargs.max:
     befmax = np.amax(hdui[0].data)
     aftmax = np.amax(image)
     scale = befmax/aftmax    
-
-    
+         
 if pargs.tanh:
     normimage = maxout*np.tanh(image * scale/maxout)
 else:
     normimage = image * scale
 
+
+if pargs.sigclipmax is not None:
+    clipped = sigma_clip(normimage,
+                         sigma_lower=np.inf,sigma_upper=pargs.sigclipmax)
+    befmax = normimage.max()
+    clipmax = clipped.max()
+    print('Sigma clipped newmax= oldmax=',clipmax,befmax)
+    normimage = clipped.filled(clipmax)
+
+if pargs.sigclipmin is not None:
+    clipped = sigma_clip(normimage,
+                         sigma_lower=pargs.sigclipmin,sigma_upper=np.inf)
+    befmin = normimage.min()
+    clipmin = clipped.min()
+    print('Sigma clipped newmin= oldmin=',clipmin,befmin)
+    normimage = clipped.filled(clipmin)
+    
     
 if np.amax(normimage) <= maxout:
     hdui[0].data = normimage
