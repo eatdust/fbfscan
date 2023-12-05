@@ -27,7 +27,7 @@ export PFSIMGOUT=/bin/pfsoutimgmagick
 export OPTOUT='--quality 98 --bit-depth 8'
 
 export PFSCAL=/bin/pfshdrcalibrate
-export OPTCAL='-r linear -c none -b 16'
+export OPTCAL='-v -r linear -c none -b 16 -z 1.0'
 
 export IMGTOHDRGEN=/bin/dcraw2hdrgen
 export PFSINEXR=/bin/pfsinexr

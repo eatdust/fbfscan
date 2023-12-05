@@ -1,0 +1,283 @@
+--- pfstools-2.2.0/src/camera/robertson02.h.orig	2021-08-12 11:36:12.000000000 +0200
++++ pfstools-2.2.0/src/camera/robertson02.h	2023-11-30 14:04:11.230716801 +0100
+@@ -82,7 +82,8 @@
+   const float *weights, 
+   int M,
+   const noise_parameters *camera,
+-  const float deghosting_value = -1);
++  const float deghosting_value = -1,
++  const float normalization_value = -1);
+ 
+   
+ #endif /* #ifndef _robertson02_h_ */
+--- pfstools-2.2.0/src/camera/robertson02.cpp.orig	2021-08-12 11:36:12.000000000 +0200
++++ pfstools-2.2.0/src/camera/robertson02.cpp	2023-11-30 14:04:11.230716801 +0100
+@@ -57,12 +57,21 @@
+ 
+ float normalize_rcurve( float *rcurve, int M );
+ 
++void find_medianRGB( pfs::Array2D *rgb[], float *median, int nc);
++
+ inline float max3( float a[3])
+ {
+   float max = (a[0]>a[1]) ? a[0] : a[1];
+   return (a[2]>max) ? a[2] : max;
+ }
+ 
++inline float med3( float a[3])
++{
++  int i = (a[0]<a[1]) ? 1 : 0;
++  i = (a[i] < a[2]) ? i : ( (a[2] > a[1-i]) ? 2 : 1-i );
++  return a[i];
++  }
++
+ float get_exposure_compensation( const Exposure &ex )
+ {
+   return ex.exposure_time * ex.aperture*ex.aperture * ex.iso/3.125f / (1.0592f * 11.4f / 3.125f);
+@@ -74,7 +83,8 @@
+   const float *weights, 
+   int M,
+   const noise_parameters *camera,
+-  const float deghosting_threshold)
++  const float deghosting_threshold,
++  const float normalization_constant)
+ {
+   // number of exposures
+   int N = imgs[0]->size();
+@@ -87,6 +97,7 @@
+   int saturated_pixels = 0;
+ 
+   float mmax[3]= {1e-30, 1e-30, 1e-30};
++  float mmed[3]= {1.f,1.f,1.f};
+ 
+ /*
+   float pw[M];
+@@ -342,18 +353,43 @@
+     
+   }
+ 
++  // default is to normalize by the max
++  float rgbnorm = max3(mmax);
++  
++  // if input is positive, we use this number
++  if ( normalization_constant > 0.f )
++    {
++      rgbnorm = normalization_constant;
++
++      VERBOSE_STR << "Image manually normalized by: " << (float)rgbnorm << std::endl;
++      
++    }
++  // if less than -1, let's use the median
++  if ( normalization_constant < -1.f )
++    {
++      VERBOSE_STR << "Computing the median... " << std::endl;
++      
++      find_medianRGB(rgb_out,mmed,3);
++      rgbnorm = med3(mmed);
++
++      VERBOSE_STR << "Image normalized by the median: " << (float)rgbnorm << std::endl;
++      
++    }
++      
++  
+   // Fill in nan values and normalise
+   for( int j = 0; j < width * height; j++ )
+     for( int cc=0; cc < 3; cc++ )
+     {
+       if( (*rgb_out[cc])(j) == -1)
+         (*rgb_out[cc])(j) = mmax[cc];
+-      (*rgb_out[cc])(j) /= max3(mmax);
++      //      (*rgb_out[cc])(j) /= max3(mmax);
++      (*rgb_out[cc])(j) /= rgbnorm;
+     }
+ 
+   VERBOSE_STR << "Exposure pixels skipped due to deghosting: " << 
+     (float)skipped_deghost*100.f/(float)(width*height*N) << "%" << std::endl;
+-
++  
+   return saturated_pixels;
+   
+ }
+@@ -596,6 +632,58 @@
+   return ( (*((float*)a))< (*((float*)b)) ) ;
+ }
+ 
++void find_medianRGB( pfs::Array2D *rgb[], float *median, int nc)
++{
++
++  int width  = rgb[0] -> getCols( );
++  int height = rgb[0] -> getRows( );
++  int N = width*height;
++
++  int Nnan;
++  int Nfine;
++  int j;
++
++  float rgbuffer;
++  
++  float *channel = new float[N];
++    
++  for( int cc = 0 ; cc < nc; cc++ )
++    {
++      Nnan = 0;
++      j = 0;
++      for( int i = 0 ; i < N ; i++ )
++	{
++	  rgbuffer = (*rgb[cc])(i);
++	  if ( rgbuffer == -1 )
++	    Nnan++;
++	  else	    
++	    {
++	      channel[j] = rgbuffer;
++	      j++;
++	    }
++	  
++	}
++
++      Nfine = N-Nnan;
++      // one extra j not stored in the last iteration
++      if (j != Nfine)
++	std::cerr << "error in median calculation j= Ninf=" << j << " " << Nfine;
++
++      
++      qsort(channel,Nfine, sizeof(float), comp_floats);
++      	  
++      if (Nfine % 2)
++	median[cc] = channel[(Nfine-1)/2];
++      else
++	median[cc] = (channel[Nfine/2] + channel[Nfine/2-1])/2.f;
++    }
++
++  delete[] channel;
++  
++}
++
++
++
+ float normalize_rcurve( float* rcurve, int M )
+ {
+   int   FILTER_SIZE =  M / 256;
+--- pfstools-2.2.0/src/camera/pfshdrcalibrate.cpp.orig	2021-08-12 11:36:12.000000000 +0200
++++ pfstools-2.2.0/src/camera/pfshdrcalibrate.cpp	2023-11-30 14:04:11.230716801 +0100
+@@ -89,6 +89,7 @@
+     "\t[--saturation-offset <val>] \n"
+     "\t[--deghosting <val>] \n"
+     "\t[--noise-parameters <val>] \n"
++    "\t[--normalization <val>] \n"
+     "\t[--verbose] [--help]\n"
+     "See man page for more information.\n" );
+ }
+@@ -134,6 +135,7 @@
+   int           opt_saturation_offset         = -1;
+   float         opt_saturation_offset_perc    = -1;
+   float         opt_deghosting                = -1;
++  float         opt_normalization             = -1;
+   noise_parameters *camera                    = &camera_presets[0];
+ 
+   /* helper */
+@@ -156,13 +158,14 @@
+     { "saturation-offset", required_argument, NULL, 'o' },
+     { "deghosting", required_argument, NULL, 'd' },
+     { "noise-parameters", required_argument, NULL, 'n'},
++    { "normalization", required_argument, NULL, 'z'},
+     { NULL, 0, NULL, 0 }
+   };
+ 
+   int optionIndex = 0;
+   while( ( c =  getopt_long( argc, 
+ 			     argv, 
+-			     "hvYc:g:r:f:s:m:b:p:xo:d:n:",
++			     "hvYc:g:r:f:s:m:b:p:xo:d:n:z:",
+ 			     cmdLineOptions, 
+ 			     &optionIndex) ) 
+ 	 != -1 ) 
+@@ -286,20 +289,41 @@
+ 	    throw pfs::Exception("min response should be >0");
+ 	  break;
+ 
+-  case 'o':
+-    opt_saturation_offset_perc = atof(optarg);
+-    if( opt_saturation_offset_perc < 0 || opt_saturation_offset_perc > 0.5 )
+-      throw pfs::Exception("saturation offset should be between 0 and 0.5");
+-    break;
++	case 'o':
++	  opt_saturation_offset_perc = atof(optarg);
++	  if( opt_saturation_offset_perc < 0 || opt_saturation_offset_perc > 0.5 )
++	    throw pfs::Exception("saturation offset should be between 0 and 0.5");
++	  break;
+ 	  
+ 	case 'd':
+-    if( !optarg )
+-      opt_deghosting = 2;
+-		else
+-      opt_deghosting = atof(optarg);
+-    if( opt_deghosting<0 )
+-      throw pfs::Exception("deghosting threshold should be >0");
+-		break;
++	  if( !optarg )
++	    opt_deghosting = 2;
++	  else
++	    opt_deghosting = atof(optarg);
++	  if( opt_deghosting<0 )
++	    throw pfs::Exception("deghosting threshold should be >0");
++	  break;
++
++	case 'z':
++	  if( !optarg )
++	    opt_normalization = -1.f;
++	  else
++	    {
++	      if (isalpha(optarg[0]))
++		{
++		  if ( strcmp( optarg, "median" ) == 0 )
++		    opt_normalization = -2.f;
++		  if ( strcmp( optarg, "max" ) == 0 )
++		    opt_normalization = -1.f;
++		}
++	      else
++		{      
++		  opt_normalization = atof(optarg);
++		  if( opt_normalization == 0.f )
++		    throw pfs::Exception("input normalization constant should not be =0");
++		}
++	    }
++	  break;
+ 
+   case 'n':
+   {
+@@ -874,7 +898,8 @@
+               const float *resp_curves[] = { Ir, Ig, Ib };
+               
+               VERBOSE_STR << "applying response to RGB channels..." << endl;
+-	      sp = robertson02_applyResponseRGB( RGB_out, exposures, resp_curves, w, M - opt_saturation_offset, camera, opt_deghosting);
++	      sp = robertson02_applyResponseRGB( RGB_out, exposures, resp_curves, w, M - opt_saturation_offset, camera, \
++						 opt_deghosting, opt_normalization);
+ 
+ /*                                            
+               VERBOSE_STR << "applying response to R channel..." << endl;
+--- pfstools-2.2.0/src/camera/pfshdrcalibrate.1.orig	2021-08-12 11:36:12.000000000 +0200
++++ pfstools-2.2.0/src/camera/pfshdrcalibrate.1	2023-11-30 14:04:11.230716801 +0100
+@@ -14,6 +14,7 @@
+ [--saturation-offset <val>]
+ [--deghosting <val>]
+ [--noise-parameters <val>]
++[--normalization <val>]
+ [--help] [--verbose]
+ 
+ .SH DESCRIPTION
+@@ -129,6 +130,15 @@
+ name. Cameras currently supported: SonyA7r1, CanonT1, SonyA7r3
+ 
+ .TP
++--normalization <val>, -z <val>
++
++By default, the Robertson's method output a normalized image by the
++maximum. This option allows you to set a fixed normalization value by
++entering a positive number. You can also specify the string "median"
++forcing a normalization by the median value of the image. This option
++only affects the Robertson method.
++
++.TP
+ --deghosting, -d [<val>]
+ 
+ EXPERIMENTAL. Try to use a simple rejection criterion to reduce
