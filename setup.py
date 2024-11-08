@@ -16,7 +16,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     scripts=[],
-    install_requires=['wipistepper','gphoto2','curses-menu','curtsies'],
+    install_requires=['wipistepper','gphoto2','curses-menu>=0.6.7','curtsies'],
     package_data={'': ['*.txt', '*.rst','config.ini'],
     },
 

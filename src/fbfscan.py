@@ -58,16 +58,22 @@ def main():
 
     read_config_file()
     
-    motor = initialize_motor(stepmode=inistepmode)
+    #motor = initialize_motor(stepmode=inistepmode)
+    motor = []
     time.sleep(2)
     camera = sc.scanner(pylog=True, summary=False)
     time.sleep(2)
     
     menu = cm.CursesMenu("Fbfscan 16mm Film Scanner", "Actions")
+
     motionitem = cm.items.FunctionItem("Motion controls",motion_controls,[motor,menu])
+    menu.items.append(motionitem)
+
     scanitem = cm.items.FunctionItem("Scan controls",scan_controls,[camera,motor,menu])
+    menu.items.append(scanitem)
     
-    settingmenu = cm.SelectionMenu(strings=[],title="Fbfscan parameters menu")
+    settingmenu = cm.CursesMenu(title="Fbfscan parameters menu")
+    settingitem = cm.items.SubmenuItem("Settings menu",settingmenu,menu)
     
     resetitem = cm.items.FunctionItem("Set image count",reset_imgcount,[])
     hdritem = cm.items.FunctionItem("Set HDR number",reset_hdrframe,[])
@@ -76,32 +82,29 @@ def main():
     expitem = cm.items.FunctionItem("Set exposure time",reset_exptime,[camera])
     isoitem = cm.items.FunctionItem("Set ISO value",reset_iso,[camera])
 
-    calibmenu = cm.SelectionMenu(strings=[],title="Fbfscan calibration menu")
+    settingmenu.items.append(resetitem)
+    settingmenu.items.append(hdritem)
+    settingmenu.items.append(inftyitem)
+    settingmenu.items.append(rangeitem)
+    settingmenu.items.append(expitem)
+    settingmenu.items.append(isoitem)
+    
+    menu.items.append(settingitem)
+    
+    calibmenu = cm.CursesMenu(title="Fbfscan calibration menu")
+    calibitem = cm.items.SubmenuItem("Calibration menu",calibmenu,menu)
+    
     nframeitem = cm.items.FunctionItem("Move by N frames",move_nframes,[motor])
     angleitem = cm.items.FunctionItem("Move by an angle",move_angle,[motor])
     flatitem = cm.items.FunctionItem("Take flat exposures",take_flats,[camera,0.0])
     zeroitem = cm.items.FunctionItem("Take zero exposures",take_zeros,[camera,0.0])
-    
-    menu.append_item(motionitem)
-    menu.append_item(scanitem)
-    
-    settingmenu.append_item(resetitem)
-    settingmenu.append_item(hdritem)
-    settingmenu.append_item(inftyitem)
-    settingmenu.append_item(rangeitem)
-    settingmenu.append_item(expitem)
-    settingmenu.append_item(isoitem)
-    
-    settingitem = cm.items.SubmenuItem("Settings menu",settingmenu,menu)
-    menu.append_item(settingitem)
-    
-    calibmenu.append_item(nframeitem)
-    calibmenu.append_item(angleitem)
-    calibmenu.append_item(flatitem)
-    calibmenu.append_item(zeroitem)
 
-    calibitem = cm.items.SubmenuItem("Calibration menu",calibmenu,menu)
-    menu.append_item(calibitem)
+    calibmenu.items.append(nframeitem)
+    calibmenu.items.append(angleitem)
+    calibmenu.items.append(flatitem)
+    calibmenu.items.append(zeroitem)
+
+    menu.items.append(calibitem)
     
     menu.show()
 
@@ -359,9 +362,10 @@ def scan_frames(camera,motor,delay,stopscan):
         motor.softrun_to('clk',degrun=0.0,degramp=180.0,rpmps=rpmps)
 
 #wait after motor move        
-        inimove = wp.millis()
-        while wp.millis() - inimove < delay:
-            pass
+        if delay > 0:
+            inimove = wp.millis()
+            while wp.millis() - inimove < delay:
+                pass
 
     nullExpValue = camera.set_exposure_time(nullExpChoice)
     camera.deconnect()
@@ -394,9 +398,10 @@ def take_flats(camera,delay):
         camera.single_capture(flatpath,imgname)            
 
 #wait if needed
-        iniflat = wp.millis()
-        while wp.millis() - iniflat < delay:
-            pass
+        if delay > 0:
+            iniflat = wp.millis()
+            while wp.millis() - iniflat < delay:
+                pass
 
     camera.deconnect(success)
 
@@ -438,9 +443,10 @@ def take_zeros(camera,delay):
         camera.single_capture(zeropath,imgname)            
 
 #wait if needed
-        inizero = wp.millis()
-        while wp.millis() - inizero < delay:
-            pass
+        if delay > 0:
+            inizero = wp.millis()
+            while wp.millis() - inizero < delay:
+                pass
 
     nullExpValue = camera.set_exposure_time(nullExpChoice)
     print()
