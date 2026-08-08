@@ -58,7 +58,7 @@ class scanner(object):
     def deconnect(self,success=True):
         error = gp.gp_camera_exit(self.camera, self.context)
         if error !=0:
-            print('camera not properly deconnect!          ')
+            print('camera not properly deconnected!          ')
             sys.stdout.write("\033[F")
             success = False
 
@@ -264,9 +264,10 @@ class scanner(object):
             
         target = os.path.join(path,filename)
 
-
+        #events = gp.gp_camera_wait_for_event(self.camera,gp.GP_EVENT_FILE_ADDED,self.context)
+        
         error, camfile = gp.gp_camera_file_get(self.camera, swigpath.folder, swigpath.name,
-                                               gp.GP_FILE_TYPE_NORMAL, self.context)
+                                               gp.GP_FILE_TYPE_NORMAL,None,self.context)
 
         error = gp.gp_file_save(camfile,target)
 
