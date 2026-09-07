@@ -18,10 +18,12 @@ parser.add_argument("--max",action="store_true"
                     ,help="Scale output to keep equal max")
 parser.add_argument("--tanh",action="store_true"
                     ,help="Tanh non-linear compression")
+parser.add_argument("--invert",action="store_true"
+                    ,help="Invert values in each channel")
 parser.add_argument("--check",action="store_true"
                     ,help="Check for saturation and skip in case of")
-parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping  max values")
-parser.add_argument("--sigclipmin",type=float,help="Sigma for clipping  min values")
+parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping max values")
+parser.add_argument("--sigclipmin",type=float,help="Sigma for clipping min values")
 
 
 
@@ -42,7 +44,7 @@ if pargs.zero is not None:
 else:
     zerocorr = False
 
-
+#flattening with zero corrections or not
 if zerocorr:
     image = np.true_divide(hdui[0].data - hduz[0].data
                            ,hduf[0].data - hduz[0].data)
@@ -53,7 +55,7 @@ else:
     hduf.close()
 
 
-
+#Determine factors for image rescaling, if any
 if pargs.median:
     befmax = np.median(hdui[0].data)
     aftmax = np.median(image)
@@ -68,13 +70,14 @@ if pargs.max:
     befmax = np.amax(hdui[0].data)
     aftmax = np.amax(image)
     scale = befmax/aftmax    
-         
+
+#Eventually compress the image with a tanh    
 if pargs.tanh:
     normimage = maxout*np.tanh(image * scale/maxout)
 else:
     normimage = image * scale
 
-
+#Apply sigma clipping if requested
 if pargs.sigclipmax is not None:
     clipped = sigma_clip(normimage,
                          sigma_lower=np.inf,sigma_upper=pargs.sigclipmax)
@@ -90,17 +93,36 @@ if pargs.sigclipmin is not None:
     clipmin = clipped.min()
     print('Sigma clipped newmin= oldmin=',clipmin,befmin)
     normimage = clipped.filled(clipmin)
+
+
+
+#Invert the channels in the normalised image
+if pargs.invert is not None:
+
+    naxis = hdui[0].header['NAXIS']
     
+    if naxis == 3:
+        ncolors = hdui[0].header['NAXIS3']
+        for i in range(ncolors):
+            normimage[i,:,:] = maxout - normimage[i,:,:]
+    elif naxis == 2:       
+        normimage = maxout - normimage
+    else:
+        print('FATAL: naxis number unsupported')
+        exit()
+
     
-if np.amax(normimage) <= maxout:
+#Warn or skip flattening in case of saturation       
+if np.amax(normimage) <= maxout and np.amax(normimage) >=0:
     hdui[0].data = normimage
 else:
     if pargs.check:
-        print('FATAL: flattening skipped due to saturation!')
+        print('FATAL: image skipped due to saturation and/or negative values')
     else:
-        print('WARNING: flattening saturates!')
+        print('WARNING: saturation and/or negative values detected!')
         hdui[0].data = normimage
-        
+    
+#output file
 if scale == 1:
     hdui[0].header['DATAMAX']=np.amax(normimage)
     hdui[0].header['DATAMIN']=np.amin(normimage)
