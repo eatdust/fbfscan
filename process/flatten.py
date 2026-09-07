@@ -20,8 +20,8 @@ parser.add_argument("--tanh",action="store_true"
                     ,help="Tanh non-linear compression")
 parser.add_argument("--invert",action="store_true"
                     ,help="Invert values in each channel")
-parser.add_argument("--equalize",action="store_true"
-                    ,help="Equalize each color channel")
+parser.add_argument("--normalize",action="store_true"
+                    ,help="Normalize each color channel")
 parser.add_argument("--check",action="store_true"
                     ,help="Check for saturation and skip in case of")
 parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping max values")
@@ -114,19 +114,17 @@ if pargs.invert:
         print('FATAL: naxis number unsupported in inverting')
         exit()
         
-#Equalize color channels
-if pargs.equalize:
+#Normalize color channels
+if pargs.normalize:
+    maxval = np.amax(normimage)
+    minval = np.amin(normimage)
     if naxis == 3:
         ncolors = hdui[0].header['NAXIS3']
         for i in range(ncolors):
             maxcolor = np.amax(normimage[i,:,:])
             mincolor = np.amin(normimage[i,:,:])
-            normimage[i,:,:] = (normimage[i,:,:]- mincolor) * maxout/(maxcolor-mincolor)
-    elif naxis == 2:
-        maxval = np.amax(normimage)
-        minval = np.amin(normimage)
-        normimage = (normimage - minval) * maxout/(maxval-minval)
-    else:
+            normimage[i,:,:] = minval + (normimage[i,:,:]- mincolor) * (maxval-minval)/(maxcolor-mincolor)
+    elif naxis != 2:
         print('FATAL: naxis number unsupported in equalizing')
         exit()
         
