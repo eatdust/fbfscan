@@ -9,17 +9,19 @@ parser = argparse.ArgumentParser()
 parser.add_argument("flat",  help="Flat master file")
 parser.add_argument("image", help="RGB 3D fits input file")
 parser.add_argument("output", help="RGB 3D fits output file")
-parser.add_argument("--zero",  help="Zero master file")
+parser.add_argument("--zero",  help="Zero master file (optional)")
 parser.add_argument("--median",action="store_true"
-                    ,help="Scale output to keep equal medians")
+                    ,help="Flattening keeps equal medians")
 parser.add_argument("--mean",action="store_true"
-                    ,help="Scale output to keep equal means")
+                    ,help="Flattening keeps equal means")
 parser.add_argument("--max",action="store_true"
-                    ,help="Scale output to keep equal max")
+                    ,help="Flattening keeps equal max")
 parser.add_argument("--tanh",action="store_true"
                     ,help="Tanh non-linear compression")
 parser.add_argument("--invert",action="store_true"
                     ,help="Invert values in each channel")
+parser.add_argument("--equalize",action="store_true"
+                    ,help="Equalize each color channel")
 parser.add_argument("--check",action="store_true"
                     ,help="Check for saturation and skip in case of")
 parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping max values")
@@ -37,6 +39,10 @@ maxout = 65535
 hduf = fits.open(pargs.flat)
 hdui = fits.open(pargs.image)
 
+#sanity check
+naxis = hdui[0].header['NAXIS']
+if hduf[0].header['NAXIS'] != naxis:
+    exit()
 
 if pargs.zero is not None:
     zerocorr = True
@@ -97,10 +103,7 @@ if pargs.sigclipmin is not None:
 
 
 #Invert the channels in the normalised image
-if pargs.invert is not None:
-
-    naxis = hdui[0].header['NAXIS']
-    
+if pargs.invert:    
     if naxis == 3:
         ncolors = hdui[0].header['NAXIS3']
         for i in range(ncolors):
@@ -108,10 +111,25 @@ if pargs.invert is not None:
     elif naxis == 2:       
         normimage = maxout - normimage
     else:
-        print('FATAL: naxis number unsupported')
+        print('FATAL: naxis number unsupported in inverting')
         exit()
-
-    
+        
+#Equalize color channels
+if pargs.equalize:
+    if naxis == 3:
+        ncolors = hdui[0].header['NAXIS3']
+        for i in range(ncolors):
+            maxcolor = np.amax(normimage[i,:,:])
+            mincolor = np.amin(normimage[i,:,:])
+            normimage[i,:,:] = (normimage[i,:,:]- mincolor) * maxout/(maxcolor-mincolor)
+    elif naxis == 2:
+        maxval = np.amax(normimage)
+        minval = np.amin(normimage)
+        normimage = (normimage - minval) * maxout/(maxval-minval)
+    else:
+        print('FATAL: naxis number unsupported in equalizing')
+        exit()
+        
 #Warn or skip flattening in case of saturation       
 if np.amax(normimage) <= maxout and np.amax(normimage) >=0:
     hdui[0].data = normimage
@@ -122,10 +140,17 @@ else:
         print('WARNING: saturation and/or negative values detected!')
         hdui[0].data = normimage
     
-#output file
-if scale == 1:
-    hdui[0].header['DATAMAX']=np.amax(normimage)
-    hdui[0].header['DATAMIN']=np.amin(normimage)
+
+#fill header and output file
+hdui[0].header['DATAMAX']=np.amax(normimage)
+hdui[0].header['DATAMIN']=np.amin(normimage)
+
+if naxis == 3:
+    ncolors = hdui[0].header['NAXIS3']
+    for i in range(ncolors):
+        hdui[0].header['COLMAX'+str(i+1)]=np.amax(normimage[i,:,:])
+        hdui[0].header['COLMIN'+str(i+1)]=np.amin(normimage[i,:,:])
+        
 
 hdui.writeto(pargs.output)
 
