@@ -20,8 +20,14 @@ parser.add_argument("--tanh",action="store_true"
                     ,help="Tanh non-linear compression")
 parser.add_argument("--invert",action="store_true"
                     ,help="Invert values in each channel")
-parser.add_argument("--normalize",action="store_true"
-                    ,help="Normalize each color channel")
+parser.add_argument("--normalize_min",action="store_true"
+                    ,help="Normalize color channels to common minimal dynamical range")
+parser.add_argument("--normalize_max",action="store_true"
+                    ,help="Normalize color channels to common maximal dynamical range")
+parser.add_argument("--translate",action="store_true"
+                    ,help="Set each color channel minimum at zero")
+parser.add_argument("--equalize",action="store_true"
+                    ,help="Perform histogram equalization in each color channel")
 parser.add_argument("--check",action="store_true"
                     ,help="Check for saturation and skip in case of")
 parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping max values")
@@ -113,20 +119,82 @@ if pargs.invert:
     else:
         print('FATAL: naxis number unsupported in inverting')
         exit()
+
+                  
+#Equalize color channels within their range
+if pargs.equalize:
+    if naxis == 3:
+        ncolors = hdui[0].header['NAXIS3']
+        naxis1 = hdui[0].header['NAXIS1']
+        naxis2 = hdui[0].header['NAXIS2']
+
+        for i in range(ncolors):
+            channel = np.int32(normimage[i,:,:].flatten())
+            minval = np.amin(channel)
+            maxval = np.amax(channel)
+            df,bins = np.histogram(channel,maxout+1,[0.0,maxout])
+            rawcdf = df.cumsum()
+            unitcdf =  rawcdf * np.amax(df)/np.amax(rawcdf)
+            cdf = minval + (unitcdf - np.min(unitcdf)) * (maxval-minval)/(np.max(unitcdf) - np.min(unitcdf))
+
+            normimage[i,:,:] = cdf[channel].reshape((naxis2,naxis1))
+            
+    elif naxis == 2:
+
+        channel = np.int16(normimage.flatten())
+        minval = np.amin(channel)
+        maxval = np.amax(channel)
+        df,bins = np.histogram(channel,maxout+1,[0.0,maxout])
+        rawcdf = df.cumsum()
+        unitcdf =  rawcdf * np.amax(df)/np.amax(rawcdf)
+        cdf = minval + (unitcdf - np.min(unitcdf)) * (maxval-minval)/(np.max(unitcdf) - np.min(unitcdf))
+
+        normimage = cdf[channel].reshape((naxis2,naxis1))
         
-#Normalize color channels
-if pargs.normalize:
-    maxval = np.amax(normimage)
-    minval = np.amin(normimage)
+    else:
+        print('FATAL: naxis number unsupported in equalizing')
+        exit()
+
+
+        
+#set black at 0, mostly relevant for negative films after inversion
+if pargs.translate:
     if naxis == 3:
         ncolors = hdui[0].header['NAXIS3']
         for i in range(ncolors):
-            maxcolor = np.amax(normimage[i,:,:])
             mincolor = np.amin(normimage[i,:,:])
-            normimage[i,:,:] = minval + (normimage[i,:,:]- mincolor) * (maxval-minval)/(maxcolor-mincolor)
-    elif naxis != 2:
-        print('FATAL: naxis number unsupported in equalizing')
+            normimage[i,:,:] = normimage[i,:,:]- mincolor
+    elif naxis == 2:
+        normimage = normimage - np.amin(normimage)
+        print('FATAL: naxis number unsupported in transate filter')
         exit()
+
+        
+#normalize colors to the minimal dynamical range of all channels
+if pargs.normalize_min or pargs.normalize_max:
+    if naxis == 3:
+        ncolors = hdui[0].header['NAXIS3']
+        maxcolor = []
+        mincolor = []
+        for i in range(ncolors):
+            maxcolor.append(np.amax(normimage[i,:,:]))
+            mincolor.append(np.amin(normimage[i,:,:]))
+
+        if pargs.normalize_min:
+            maxval = np.amin(maxcolor)
+            minval = np.amax(mincolor)
+        else:
+            maxval = np.amax(maxcolor)
+            minval = np.amin(maxcolor)
+            
+        for i in range(ncolors):            
+            normimage[i,:,:] = minval + (normimage[i,:,:]- mincolor[i]) * (maxval-minval)/(maxcolor[i]-mincolor[i])
+            
+    elif naxis != 2:
+        print('FATAL: naxis number unsupported in normalizing')
+        exit()
+
+        
         
 #Warn or skip flattening in case of saturation       
 if np.amax(normimage) <= maxout and np.amax(normimage) >=0:
