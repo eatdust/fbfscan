@@ -32,7 +32,8 @@ parser.add_argument("--check",action="store_true"
                     ,help="Check for saturation and skip in case of")
 parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping max values")
 parser.add_argument("--sigclipmin",type=float,help="Sigma for clipping min values")
-
+parser.add_argument("--dataheader",action="store_true"
+                    ,help="Update header with DATAMIN/DATAMAX")
 
 
 pargs = parser.parse_args()
@@ -208,8 +209,9 @@ else:
     
 
 #fill header and output file
-hdui[0].header['DATAMAX']=np.amax(normimage)
-hdui[0].header['DATAMIN']=np.amin(normimage)
+if pargs.dataheader:
+    hdui[0].header['DATAMAX']=np.amax(normimage)
+    hdui[0].header['DATAMIN']=np.amin(normimage)
 
 if naxis == 3:
     ncolors = hdui[0].header['NAXIS3']
