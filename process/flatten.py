@@ -24,16 +24,17 @@ parser.add_argument("--normalize_min",action="store_true"
                     ,help="Normalize color channels to common minimal dynamical range")
 parser.add_argument("--normalize_max",action="store_true"
                     ,help="Normalize color channels to common maximal dynamical range")
-parser.add_argument("--translate",action="store_true"
+parser.add_argument("--vanish",action="store_true"
                     ,help="Set each color channel minimum at zero")
 parser.add_argument("--equalize",action="store_true"
                     ,help="Perform histogram equalization in each color channel")
 parser.add_argument("--check",action="store_true"
                     ,help="Check for saturation and skip in case of")
-parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping max values")
-parser.add_argument("--sigclipmin",type=float,help="Sigma for clipping min values")
 parser.add_argument("--dataheader",action="store_true"
                     ,help="Update header with DATAMIN/DATAMAX")
+parser.add_argument("--sigclipmax",type=float,help="Sigma for clipping max values")
+parser.add_argument("--sigclipmin",type=float,help="Sigma for clipping min values")
+parser.add_argument("--shift",type=float,help="Shift all channels by this value")
 
 
 pargs = parser.parse_args()
@@ -159,7 +160,7 @@ if pargs.equalize:
 
         
 #set black at 0, mostly relevant for negative films after inversion
-if pargs.translate:
+if pargs.vanish:
     if naxis == 3:
         ncolors = hdui[0].header['NAXIS3']
         for i in range(ncolors):
@@ -195,8 +196,9 @@ if pargs.normalize_min or pargs.normalize_max:
         print('FATAL: naxis number unsupported in normalizing')
         exit()
 
-        
-        
+if pargs.shift is not None:
+    normimage = normimage + pargs.shift
+    
 #Warn or skip flattening in case of saturation       
 if np.amax(normimage) <= maxout and np.amax(normimage) >=0:
     hdui[0].data = normimage
