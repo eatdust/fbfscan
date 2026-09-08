@@ -89,30 +89,35 @@ motor settings, see [**wipistepper**](https://github.com/eatdust/wipistepper)
 for more details. Other editable settings are:
 
 ```python
-#stepmode
-inistepmode = 16
 
-#storage path for output scans
-toppath ='/home/alarm/tests/'
-imgpath = toppath + 'scans/'
-flatpath = toppath + 'flats/'
-zeropath = toppath + 'zeros/'
+[storage]
+toppath    = /tmp/
+imgsubdir  = scans/
+flatsubdir = flats/
+zerosubdir = zeros/
 
-#img settings
-imgroot = 'test'
-imgtype = 'nef'
+imgroot    = myscan
+imgtype    = nef
 
-#hdr default settings
-hdrframe = 3
-exprange = 2
+[camera]
+imgcount   = 0
+imginfty   = 43200
+hdrframe   = 3
+exprange   = 4
+
+
+[stepper]
+stepmode   = 16
+maxaccel   = 360
+maxspeed   = 1440
 
 ```
 
-They specify how many *hdrframe* you want for each scan image, what
-exposure range (*exprange*) they spawn (here 2 stops). These can also
-be edited interactively using the **fbfscan** settings menu. A summary
-of the default settings is displayed during the initialization, after
-which, the main menu shows up:
+In the camera section, you can specify how many *hdrframe* you want
+for each scan image, what exposure range (*exprange*) they spawn (here
+4 stops). These can also be edited interactively using the **fbfscan**
+settings menu. A summary of the default settings is displayed during
+the initialization, after which, the main menu shows up:
 
 ---
 ![main](/docs/main_menu.png?raw=true)
@@ -158,6 +163,10 @@ The beast running and controlled from the "motion" menu:
 The disco lights flashing on the back:
 
 ![back](/docs/scannerback.jpg)
+
+Some example scans of half-century old 16mm films
+
+[film16mm](https://vimeo.com/film16mm)
 
 Good Luck!
 
