@@ -105,7 +105,6 @@ imginfty   = 43200
 hdrframe   = 3
 exprange   = 4
 
-
 [stepper]
 stepmode   = 16
 maxaccel   = 360
@@ -164,9 +163,7 @@ The disco lights flashing on the back:
 
 ![back](/docs/scannerback.jpg)
 
-Some example scans of half-century old 16mm films
-
-[film16mm](https://vimeo.com/film16mm)
+Some example scans of half-century old 16mm films: [film16mm](https://vimeo.com/film16mm)
 
 Good Luck!
 
