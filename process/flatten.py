@@ -70,6 +70,8 @@ if pargs.max:
     befmax = np.amax(hdui[0].data)
     aftmax = np.amax(image)
     scale = befmax/aftmax    
+
+normimage = scale * image
     
 #Warn or skip flattening in case of saturation       
 if np.amax(normimage) <= maxout and np.amax(normimage) >=0:
