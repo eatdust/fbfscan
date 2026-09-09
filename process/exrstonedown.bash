@@ -8,16 +8,25 @@ export PFSIN=/bin/pfsinexr
 export PFSCLAMP=/bin/pfsclamp
 export OPTCLAMP=
 
+#tone mapping
 export PFSTMO=/bin/pfstmo_mantiuk08
 export OPTTMO='-d g=2.1:l=5000:b=0.1:k=0:a=0 -f 25'
 
-#basic LDR convertion
+#or basic LDR convertion
 #export PFSTMO=/bin/pfsgamma
 #export OPTTMO='-g 1.9 -m 0.02'
+
+#for negative films, set the color inverter (to be commented for
+#positive)
+#export IMGINVERTER=/bin/magick
+export OPTINVERT='-negate -gamma 0.4 -quality 98'
+export OPTTMP=
+export DELETENEG=0
 
 export EXRSUFFIX='exr'
 export OUTSUFFIX='jpg'
 export OUTPREFIX='O_'
+export TMPSUFFIX='ppm'
 
 export EXRPRINTF='%06d'
 
@@ -49,9 +58,33 @@ function spawndist()
     
     exrfile=$pattern'.'$EXRSUFFIX
     outfile=$OUTPREFIX$pattern'.'$OUTSUFFIX
-    
-    $PFSIN $exrfile --frames $startframe:$endframe | $PFSCLAMP $OPTCLAMP | $PFSTMO $OPTTMO | $PFSIMGOUT $OPTOUT $outfile --frames $startframe:$endframe
+    tmpfile=$OUTPREFIX$pattern'.'$TMPSUFFIX
 
+    if [ -z ${IMGINVERTER+x} ]; then
+
+	$PFSIN $exrfile --frames $startframe:$endframe | $PFSCLAMP $OPTCLAMP | $PFSTMO $OPTTMO | $PFSIMGOUT $OPTOUT $outfile --frames $startframe:$endframe
+
+    else
+
+	$PFSIN $exrfile --frames $startframe:$endframe | $PFSCLAMP $OPTCLAMP | $PFSTMO $OPTTMO | $PFSIMGOUT $OPTTMP $tmpfile --frames $startframe:$endframe
+
+	for (( frame=$startframe; frame<=endframe; frame++))
+	do
+	    FRAMECOUNT=$(printf $EXRPRINTF $frame)
+	    negfile=$OUTPREFIX$EXRPREFIX'_'$FRAMECOUNT'.'$TMPSUFFIX
+	    posfile=$OUTPREFIX$EXRPREFIX'_'$FRAMECOUNT'.'$OUTSUFFIX
+	    echo "Inverting $negfile to $posfile..."
+	    $IMGINVERTER $negfile $OPTINVERT $posfile
+	    if [ $DELETENEG -eq 1 ]; then
+		rm -f $negfile
+	    fi
+	done
+
+    fi
+    
+    
+
+	
 }
 
 
