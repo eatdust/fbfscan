@@ -23,9 +23,6 @@ export OPTFLATTEN='--mean'
 export PFSINHDR=/bin/pfsinhdrgen
 export PFSEXROUT=/bin/pfsout
 
-export PFSIMGOUT=/bin/pfsoutimgmagick
-export OPTOUT='--quality 98 --bit-depth 8'
-
 export PFSCAL=/bin/pfshdrcalibrate
 export OPTCAL='-v -r linear -c none -b 16 -z 1.0'
 
