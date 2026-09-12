@@ -5,8 +5,9 @@ export OPTOUT='--quality 98 --bit-depth 8'
 
 export PFSIN=/bin/pfsinexr
 
+#clamp before tonemapping (default none)
 export PFSCLAMP=/bin/pfsclamp
-export OPTCLAMP=
+export OPTCLAMP='--min 0.0 --max 100.0 -p'
 
 #tone mapping
 export PFSTMO=/bin/pfstmo_mantiuk08
