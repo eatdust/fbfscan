@@ -15,6 +15,7 @@ export FITSTOPPM=/bin/fitstopnm
 export OPTFITSTOPPM='-omaxval=65535'
 
 export PAMFLIP=/bin/pamflip
+export OPTPAMFLIP='-topbottom'
 
 export PYTHON=/bin/python
 export FLATTEN=./flatten.py
@@ -109,7 +110,7 @@ function spawndist()
 	fi
 	    
 	echo 'converting: '$outfits 'to' $outppm	
-	$FITSTOPPM $OPTFITSTOPPM $outfits | $PAMFLIP -topbottom > $outppm
+	$FITSTOPPM $OPTFITSTOPPM $outfits | $PAMFLIP $OPTPAMFLIP > $outppm
 
 	if [ $DELETETMP -eq 1 ]; then
 	    rm -f $outfits $fitsname
